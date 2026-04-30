@@ -1,7 +1,7 @@
 #include "tts.h"
 #include <BackgroundAudioSpeech.h>
 #include <ESP32I2SAudio.h>
-#include <libespeak-ng/voice/en_us.h>
+#include <libespeak-ng/voice/ja.h>
 #include <M5Cardputer.h>
 
 static ESP32I2SAudio* audio;
@@ -14,11 +14,11 @@ void tts_init() {
 }
 void tts_load_voice(int pitch) {
     memset(cvoice, 0, 512);
-    memcpy(cvoice, voice_en_us.data, voice_en_us.len);
+    memcpy(cvoice, voice_ja.data, voice_ja.len);
     strcat((char*)cvoice, (String("pitch ") + pitch + " " + pitch + "\n").c_str());
     strcat((char*)cvoice, "speed 1\n");
     BackgroundAudioVoice vdata = {
-        .name = voice_en_us.name,
+        .name = voice_ja.name,
         .len = strlen((char*)cvoice),
         .data = cvoice
     };
