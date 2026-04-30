@@ -25,6 +25,8 @@ void tts_load_voice(int pitch) {
     BMP->setVoice(vdata);
     if(!loaded) {
         BMP->begin();
+        BMP->setWordGap(0);
+        BMP->setGain(0.5);
         loaded = true;
     }
 }

@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <M5Cardputer.h>
 #include "tts.h"
+#include "pitch.h"
 
 void setup() {
     auto cfg = M5.config();
@@ -23,16 +24,41 @@ void setup() {
     M5Cardputer.Display.println("2");
 }
 void loop() {
-    tts_set_pitch(50);
-    tts_play("[[kaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]]");
-    delay(1500);
-    tts_set_pitch(99);
-    tts_play("[[kaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]]");
-    delay(1500);
-    tts_set_pitch(50);
-    tts_play("[[kaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]]");
-    delay(1500);
-    tts_set_pitch(0);
-    tts_play("[[kaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]]");
-    delay(1500);
+    tts_set_pitch(pitch_calc(440, 262));
+    tts_play("haaaaaaa");
+    delay(600);
+    tts_set_pitch(pitch_calc(440, 262));
+    tts_play("piiiiiii");
+    delay(300);
+    tts_set_pitch(pitch_calc(440, 294));
+    tts_play("boooooo");
+    delay(600);
+    tts_set_pitch(pitch_calc(440, 262));
+    tts_play("'rdaaaaaaaa");
+    delay(600);
+    tts_set_pitch(pitch_calc(440, 349));
+    tts_play("ytuuuuuuu");
+    delay(600);
+    tts_set_pitch(pitch_calc(440, 330));
+    tts_play("yuuuuuuu");
+    delay(1200);
+
+    tts_set_pitch(pitch_calc(440, 262));
+    tts_play("haaaaaaa");
+    delay(600);
+    tts_set_pitch(pitch_calc(440, 262));
+    tts_play("piiiiiii");
+    delay(300);
+    tts_set_pitch(pitch_calc(440, 294));
+    tts_play("boooooo");
+    delay(600);
+    tts_set_pitch(pitch_calc(440, 262));
+    tts_play("'rdaaaaaaaa");
+    delay(600);
+    tts_set_pitch(pitch_calc(440, 392));
+    tts_play("ytuuuuuuu");
+    delay(600);
+    tts_set_pitch(pitch_calc(440, 349));
+    tts_play("yuuuuuuu");
+    delay(1200);
 }
