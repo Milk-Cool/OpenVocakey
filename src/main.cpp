@@ -2,6 +2,17 @@
 #include <M5Cardputer.h>
 #include "tts.h"
 #include "pitch.h"
+#include "cvt.h"
+
+static unsigned i = 0;
+static String song[] = {
+    "き", "ら", "き", "ら", "ひ", "か", "る",
+    "お", "そ", "ら", "の", "ほ", "し", "よ",
+    "ま", "ば", "た", "き", "し", "て", "は",
+    "み", "ん", "な", "を", "み", "て", "る",
+    "き", "ら", "き", "ら", "ひ", "か", "る",
+    "お", "そ", "ら", "の", "ほ", "し", "よ",
+};
 
 void setup() {
     auto cfg = M5.config();
@@ -23,83 +34,29 @@ void setup() {
     tts_load_voice(440);
     M5Cardputer.Display.println("2");
 }
+static bool playing = false;
+static void next_syl(float pitch) {
+    tts_set_pitch(pitch_calc(440, pitch));
+    String cvtd = cvt_syl(song[i++ % (sizeof(song) / sizeof(song[0]))]);
+    tts_play(cvtd.c_str());
+    Serial.println(cvtd);
+    playing = true;
+}
+#define KEY(c, p) if(!playing && M5Cardputer.Keyboard.isKeyPressed(c)) next_syl(p);
 void loop() {
-    tts_set_pitch(pitch_calc(440, 262));
-    tts_play("ハアアア");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 262));
-    tts_play("ピイイイ");
-    delay(300);
-    tts_set_pitch(pitch_calc(440, 294));
-    tts_play("バオオオ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 262));
-    tts_play("スデエエエ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 349));
-    tts_play("トウウウ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 330));
-    tts_play("ユウウウ");
-    delay(1200);
-
-    tts_set_pitch(pitch_calc(440, 262));
-    tts_play("ハアアア");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 262));
-    tts_play("ピイイイ");
-    delay(300);
-    tts_set_pitch(pitch_calc(440, 294));
-    tts_play("バオオオ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 262));
-    tts_play("スデエエエ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 392));
-    tts_play("トウウウ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 349));
-    tts_play("ユウウウ");
-    delay(1200);
-
-    tts_set_pitch(pitch_calc(440, 262));
-    tts_play("ハアアア");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 262));
-    tts_play("ピイイイ");
-    delay(300);
-    tts_set_pitch(pitch_calc(440, 523));
-    tts_play("バオオオ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 440));
-    tts_play("スデエエエ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 349));
-    tts_play("ディアアアア");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 330));
-    tts_play("リ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 294));
-    tts_play("リ");
-    delay(600);
-
-    tts_set_pitch(pitch_calc(440, 466));
-    tts_play("ハアアア");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 466));
-    tts_play("ピイイイ");
-    delay(300);
-    tts_set_pitch(pitch_calc(440, 440));
-    tts_play("バオオオ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 349));
-    tts_play("スデエエエ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 392));
-    tts_play("トウウウ");
-    delay(600);
-    tts_set_pitch(pitch_calc(440, 349));
-    tts_play("ユウウウ");
-    delay(1200);
+    M5Cardputer.update();
+    KEY('a', 262)
+    else KEY('w', 277)
+    else KEY('s', 294)
+    else KEY('e', 311)
+    else KEY('d', 330)
+    else KEY('r', 349)
+    else KEY('f', 370)
+    else KEY('g', 392)
+    else KEY('y', 415)
+    else KEY('h', 440)
+    else KEY('u', 466)
+    else KEY('j', 494)
+    else KEY('k', 523)
+    else if(!M5Cardputer.Keyboard.isPressed()) { tts_stop(); playing = false; }
 }
