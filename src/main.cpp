@@ -44,7 +44,8 @@ static void next_syl(float pitch) {
 }
 #define KEY(c, p) if(!playing && M5Cardputer.Keyboard.isKeyPressed(c)) next_syl(p);
 void loop() {
-    M5Cardputer.update();
+    M5Cardputer.Keyboard.updateKeyList();
+    M5Cardputer.Keyboard.updateKeysState();
     KEY('a', 262)
     else KEY('w', 277)
     else KEY('s', 294)
