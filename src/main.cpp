@@ -59,5 +59,5 @@ void loop() {
     else KEY('u', 466)
     else KEY('j', 494)
     else KEY('k', 523)
-    else if(!M5Cardputer.Keyboard.isPressed()) { tts_stop(); playing = false; }
+    else if(playing && !M5Cardputer.Keyboard.isPressed()) { tts_stop(); playing = false; }
 }
