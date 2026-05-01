@@ -4,6 +4,8 @@
 #include "pitch.h"
 #include "cvt.h"
 
+extern const uint8_t hiragana_vlw_start[] asm("_binary_data_hiragana_vlw_start");
+
 static unsigned i = 0;
 static String song[] = {
     "き", "ら", "き", "ら", "ひ", "か", "る",
@@ -19,6 +21,7 @@ void setup() {
     M5Cardputer.begin(cfg);
     Serial.begin(115200);
     M5Cardputer.Display.setTextSize(M5Cardputer.Display.height() / 60);
+    M5Cardputer.Display.loadFont(hiragana_vlw_start);
     M5Cardputer.Speaker.begin();
     // M5Cardputer.Display.println("ws");
     // M5Cardputer.Display.println(M5Cardputer.Speaker.config().pin_ws);
@@ -28,11 +31,8 @@ void setup() {
     // M5Cardputer.Display.println(M5Cardputer.Speaker.config().pin_bck);
     // M5Cardputer.Display.println("mck");
     // M5Cardputer.Display.println(M5Cardputer.Speaker.config().pin_mck);
-    M5Cardputer.Display.println("0");
     tts_init();
-    M5Cardputer.Display.println("1");
     tts_load_voice(440);
-    M5Cardputer.Display.println("2");
 }
 static bool playing = false;
 static void next_syl(float pitch) {
@@ -43,9 +43,18 @@ static void next_syl(float pitch) {
     playing = true;
 }
 #define KEY(c, p) if(!playing && M5Cardputer.Keyboard.isKeyPressed(c)) next_syl(p);
+uint64_t last_screen_upd = 0;
 void loop() {
     M5Cardputer.Keyboard.updateKeyList();
     M5Cardputer.Keyboard.updateKeysState();
+    uint64_t now = millis();
+    if(now - last_screen_upd > 100) {
+        String t = "";
+        for(int I = i % (sizeof(song) / sizeof(song[0])); I < i % (sizeof(song) / sizeof(song[0])) + 7 && I < (sizeof(song) / sizeof(song[0])); I++)
+            t += song[I];
+        M5Cardputer.Display.drawString(t + "                     ", 2, 2);
+        last_screen_upd = now;
+    }
     KEY('a', 262)
     else KEY('w', 277)
     else KEY('s', 294)
