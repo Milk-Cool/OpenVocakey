@@ -7,14 +7,15 @@
 static ESP32I2SAudio* audio;
 static BackgroundAudioSpeech* BMP;
 static bool loaded = false;
-static unsigned char cvoice[512];
+static unsigned char cvoice[1024];
 void tts_init() {
     audio = new ESP32I2SAudio(41, 43, 42);
     BMP = new BackgroundAudioSpeech(*audio);
 }
-void tts_load_voice(int pitch) {
-    memset(cvoice, 0, 512);
+void tts_load_voice(String concat, int pitch) {
+    memset(cvoice, 0, 1024);
     memcpy(cvoice, voice_ja.data, voice_ja.len);
+    strcat((char*)cvoice, concat.c_str());
     strcat((char*)cvoice, (String("pitch ") + pitch + " " + pitch + "\n").c_str());
     strcat((char*)cvoice, "speed 1\n");
     BackgroundAudioVoice vdata = {
@@ -23,12 +24,11 @@ void tts_load_voice(int pitch) {
         .data = cvoice
     };
     BMP->setVoice(vdata);
-    if(!loaded) {
-        BMP->begin();
-        BMP->setWordGap(0);
-        BMP->setGain(0.5);
-        loaded = true;
-    }
+    if(loaded) BMP->end();
+    BMP->begin();
+    BMP->setWordGap(0);
+    BMP->setGain(0.5);
+    loaded = true;
 }
 void tts_set_pitch(int pitch) {
     BMP->setPitch(pitch);

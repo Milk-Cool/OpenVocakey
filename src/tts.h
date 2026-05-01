@@ -1,8 +1,9 @@
 #pragma once
+#include <Arduino.h>
 
 void tts_init();
 // TODO: more params
-void tts_load_voice(int pitch);
+void tts_load_voice(String concat, int pitch);
 // pitch: 0 = 50% of pitch in load_voice, 99 = 198%, 50 = 100%
 void tts_set_pitch(int pitch);
 bool tts_done();
