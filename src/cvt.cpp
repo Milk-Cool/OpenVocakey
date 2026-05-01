@@ -150,7 +150,7 @@ static std::map<String, String> prolong_map = {
 String cvt_syl(String& syl) {
     if(!prolong_map.contains(syl)) return syl;
     String o = syl;
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 25; i++)
         o += prolong_map[syl];
     return o;
 }
