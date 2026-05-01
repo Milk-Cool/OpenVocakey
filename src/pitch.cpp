@@ -1,5 +1,6 @@
 #include "pitch.h"
+#include <math.h>
 
 int pitch_calc(float pitch_base, float pitch_target) {
-    return pitch_base < pitch_target ? pitch_target / pitch_base * 49.5 : (pitch_target - pitch_base / 2) / (pitch_base / 2) * 50; // i *think* this should work?
+    return log2(pitch_target / pitch_base) * 50 + 50;
 }
