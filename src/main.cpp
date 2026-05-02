@@ -41,6 +41,8 @@ void setup() {
 
     Serial.print("> ");
     Serial.flush();
+
+    pinMode(0, INPUT_PULLUP);
 }
 static bool playing = false;
 static void next_syl(float pitch) {
@@ -153,6 +155,8 @@ void loop() {
             Serial.flush();
         } else inp += c;
     }
+
+    if(!digitalRead(0)) i = 0;
 
     // Update state
     M5Cardputer.Keyboard.updateKeyList();
