@@ -36,6 +36,7 @@ void setup() {
     // M5Cardputer.Display.println(M5Cardputer.Speaker.config().pin_mck);
     tts_init();
     tts_load_voice("", 440);
+    tts_set_wpm(200);
     LittleFS.begin(true);
     if(!LittleFS.exists("/songs")) LittleFS.mkdir("/songs");
     if(!LittleFS.exists("/vbs")) LittleFS.mkdir("/vbs");
@@ -108,6 +109,8 @@ void loop() {
                 Serial.println("s_get <song> - get song by filename");
                 Serial.println("s_set <song> - save song until \"EOF\"");
                 Serial.println("s_sel <song> - select song to sing");
+                Serial.println("wpm <wpm> - set the wpm for the espeak engine, useful for shortening consonants");
+                Serial.println("stretch <cnt_vowels> - set the vowel stretch, high values may produce lag");
             } else if(vec[0] == "v_list") {
                 File vbs = LittleFS.open("/vbs");
                 print_and_close_dir(vbs);
@@ -146,6 +149,10 @@ void loop() {
                 }
                 if(cur != "") g_song.push_back(cur);
                 song.close();
+            } else if(vec[0] == "wpm" && vec.size() >= 2) {
+                tts_set_wpm(vec[1].toInt());
+            } else if(vec[0] == "stretch" && vec.size() >= 2) {
+                set_stretch(vec[1].toInt());
             } else {
                 Serial.println("Invalid command or arguments");
             }

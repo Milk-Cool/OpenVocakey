@@ -1,6 +1,7 @@
 #include "cvt.h"
 #include <map>
 
+static int g_stretch = 25;
 static std::map<String, String> prolong_map = {
     {"か", "あ"},
     {"が", "い"},
@@ -150,7 +151,10 @@ static std::map<String, String> prolong_map = {
 String cvt_syl(String& syl) {
     if(!prolong_map.contains(syl)) return syl;
     String o = syl;
-    for(int i = 0; i < 25; i++)
+    for(int i = 0; i < g_stretch; i++)
         o += prolong_map[syl];
     return o;
+}
+void set_stretch(int stretch) {
+    g_stretch = stretch;
 }

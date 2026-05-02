@@ -17,7 +17,7 @@ void tts_load_voice(String concat, int pitch) {
     memcpy(cvoice, voice_ja.data, voice_ja.len);
     strcat((char*)cvoice, concat.c_str());
     strcat((char*)cvoice, (String("pitch ") + pitch + " " + pitch + "\n").c_str());
-    strcat((char*)cvoice, "speed 1\n");
+    // strcat((char*)cvoice, "speed 1\n");
     BackgroundAudioVoice vdata = {
         .name = voice_ja.name,
         .len = strlen((char*)cvoice),
@@ -32,6 +32,9 @@ void tts_load_voice(String concat, int pitch) {
 }
 void tts_set_pitch(int pitch) {
     BMP->setPitch(pitch);
+}
+void tts_set_wpm(int wpm) {
+    BMP->setRate(wpm);
 }
 bool tts_done() {
     return BMP->done();
