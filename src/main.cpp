@@ -5,6 +5,7 @@
 #include "cvt.h"
 #include <LittleFS.h>
 #include <vector>
+#include "input.h"
 
 extern const uint8_t hiragana_vlw_start[] asm("_binary_data_hiragana_vlw_start");
 
@@ -44,14 +45,12 @@ void setup() {
 
     pinMode(0, INPUT_PULLUP);
 }
-static bool playing = false;
+static SynthKey pressed = KEY_NONE;
 static void next_syl(float pitch) {
     tts_set_pitch(pitch_calc(440, pitch));
     String cvtd = cvt_syl(g_song[i++ % g_song.size()]);
     tts_play(cvtd.c_str());
-    playing = true;
 }
-#define KEY(c, p) if(!playing && M5Cardputer.Keyboard.isKeyPressed(c)) next_syl(p);
 uint64_t last_screen_upd = 0;
 static String inp = "";
 static std::vector<String> parse_args(String& raw) {
@@ -159,8 +158,7 @@ void loop() {
     if(!digitalRead(0)) i = 0;
 
     // Update state
-    M5Cardputer.Keyboard.updateKeyList();
-    M5Cardputer.Keyboard.updateKeysState();
+    input_upd();
     uint64_t now = millis();
     if(now - last_screen_upd > 100) {
         String t = "";
@@ -169,18 +167,14 @@ void loop() {
         M5Cardputer.Display.drawString(t + "                     ", 2, 2);
         last_screen_upd = now;
     }
-    KEY('a', 262)
-    else KEY('w', 277)
-    else KEY('s', 294)
-    else KEY('e', 311)
-    else KEY('d', 330)
-    else KEY('r', 349)
-    else KEY('f', 370)
-    else KEY('g', 392)
-    else KEY('y', 415)
-    else KEY('h', 440)
-    else KEY('u', 466)
-    else KEY('j', 494)
-    else KEY('k', 523)
-    else if(playing && !M5Cardputer.Keyboard.isPressed()) { tts_stop(); playing = false; }
+    SynthKey k;
+    int j = 0;
+    if(pressed != KEY_NONE && !input_pressed(pressed)) {
+        tts_stop();
+        pressed = KEY_NONE;
+    }
+    if(pressed == KEY_NONE) while((k = all_keys[j++]) != KEY_NONE) if(input_pressed(k)) {
+        pressed = k;
+        next_syl(get_freq(k));
+    }
 }
