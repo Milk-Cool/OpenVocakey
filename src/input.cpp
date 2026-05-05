@@ -3,7 +3,10 @@
 #include <M5Cardputer.h>
 #else
 #include <Arduino.h>
+#include <map>
 #endif
+
+#define DEBOUNCE 10
 
 SynthKey all_keys[] = {
     KEY_C4,
@@ -21,6 +24,27 @@ SynthKey all_keys[] = {
     KEY_C5,
     KEY_NONE
 };
+#ifndef CARDPUTER
+typedef struct {
+    uint64_t t;
+    bool pressed;
+} Debounce;
+std::map<SynthKey, Debounce> debounce = {
+    { KEY_C4, { 0, false } },
+    { KEY_CS4, { 0, false } },
+    { KEY_D4, { 0, false } },
+    { KEY_DS4, { 0, false } },
+    { KEY_E4, { 0, false } },
+    { KEY_F4, { 0, false } },
+    { KEY_FS4, { 0, false } },
+    { KEY_G4, { 0, false } },
+    { KEY_GS4, { 0, false } },
+    { KEY_A4, { 0, false } },
+    { KEY_AS4, { 0, false } },
+    { KEY_B4, { 0, false } },
+    { KEY_C5, { 0, false } },
+};
+#endif
 
 void input_init() {
 #ifndef CARDPUTER
@@ -81,8 +105,9 @@ bool input_pressed(SynthKey key) {
     return false;
 }
 #else
-#define KEY2(p, o) if(key == o) return !digitalRead(p);
+#define KEY2(p, o) if(key == o) { if(now - debounce[o].t < DEBOUNCE) { return debounce[o].pressed; } debounce[o].t = now; int v = !digitalRead(p); debounce[o].pressed = v; return v; }
 bool input_pressed(SynthKey key) {
+    uint64_t now = millis();
     // Serial.printf("%d %hhu\n", 15, !digitalRead(15));
     // Serial.printf("%d %hu\n", 36, analogRead(36));
     // Serial.printf("%d %hu\n", 39, analogRead(39));

@@ -267,3 +267,6 @@ String cvt_syl(String& syl) {
 void set_stretch(int stretch) {
     g_stretch = stretch;
 }
+int get_stretch() {
+    return g_stretch;
+}

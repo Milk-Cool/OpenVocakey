@@ -7,6 +7,8 @@ static ESP32I2SAudio* audio;
 static BackgroundAudioSpeech* BMP;
 static bool loaded = false;
 static unsigned char cvoice[1024];
+static int last_wpm = 0;
+static float last_vol = 1;
 void tts_init() {
 #ifdef CARDPUTER
     audio = new ESP32I2SAudio(41, 43, 42);
@@ -38,6 +40,17 @@ void tts_set_pitch(int pitch) {
 }
 void tts_set_wpm(int wpm) {
     BMP->setRate(wpm);
+    last_wpm = wpm;
+}
+int tts_get_wpm() {
+    return last_wpm;
+}
+void tts_set_vol(float vol) {
+    BMP->setGain(vol);
+    last_vol = vol;
+}
+float tts_get_vol() {
+    return last_vol;
 }
 bool tts_done() {
     return BMP->done();

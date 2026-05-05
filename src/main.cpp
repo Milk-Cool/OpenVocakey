@@ -2,8 +2,6 @@
 #ifdef CARDPUTER
 #include <M5Cardputer.h>
 #else
-#include <Adafruit_SSD1306.h>
-#include <U8g2_for_Adafruit_GFX.h>
 // #include "font.h"
 #endif
 #include "tts.h"
@@ -12,10 +10,7 @@
 #include <LittleFS.h>
 #include <vector>
 #include "input.h"
-
-#ifdef CARDPUTER
-extern const uint8_t hiragana_vlw_start[] asm("_binary_data_hiragana_vlw_start");
-#endif
+#include "gfx.h"
 
 static unsigned i = 0;
 static std::vector<String> g_song = {
@@ -27,25 +22,26 @@ static std::vector<String> g_song = {
     "お", "そ", "ら", "の", "ほ", "し", "よ",
 };
 
-#ifndef CARDPUTER
-Adafruit_SSD1306 display(128, 64);
-U8G2_FOR_ADAFRUIT_GFX u8g2_for_adafruit_gfx;
-#endif
+static uint8_t menu_mode = 0;
+static uint8_t sel_option = 0;
+static uint8_t config_option = 0;
+static uint32_t file_idx = 0;
+static uint32_t num_val = 0;
+#define CFG_SONG 1
+#define CFG_VB 2
+#define CFG_WPM 3
+#define CFG_STRETCH 4
+#define CFG_VOLUME 5
+#define CFG_MAX CFG_VOLUME
 
 void setup() {
     Serial.begin(115200);
 #ifdef CARDPUTER
     auto cfg = M5.config();
     M5Cardputer.begin(cfg);
-    M5Cardputer.Display.setTextSize(M5Cardputer.Display.height() / 60);
-    M5Cardputer.Display.loadFont(hiragana_vlw_start);
     M5Cardputer.Speaker.begin();
-#else
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3c);
-    u8g2_for_adafruit_gfx.begin(display);
-
-    u8g2_for_adafruit_gfx.setFont(u8g2_font_b16_t_japanese1);
 #endif
+    gfx_init();
     // M5Cardputer.Display.println("ws");
     // M5Cardputer.Display.println(M5Cardputer.Speaker.config().pin_ws);
     // M5Cardputer.Display.println("data_out");
@@ -110,6 +106,20 @@ static void write_from_serial_and_close_file(File& f) {
     f.write((uint8_t*)in.c_str(), in.length());
     f.close();
 }
+static void load_song(String str) {
+    String cur = "";
+    i = 0;
+    g_song.clear();
+    for(char c : str) {
+        if(c == '\r') continue;
+        if(c == '\n') {
+            if(cur != "") g_song.push_back(cur);
+            cur = "";
+        } else cur += c;
+    }
+    if(cur != "") g_song.push_back(cur);
+}
+static bool boot_pressed = false;
 void loop() {
     // CLI
     while(Serial.available()) {
@@ -158,17 +168,7 @@ void loop() {
                 vb.close();
             } else if(vec[0] == "s_sel" && vec.size() >= 2) {
                 File song = LittleFS.open("/songs/" + vec[1]);
-                String cur = "";
-                i = 0;
-                g_song.clear();
-                for(char c : song.readString()) {
-                    if(c == '\r') continue;
-                    if(c == '\n') {
-                        if(cur != "") g_song.push_back(cur);
-                        cur = "";
-                    } else cur += c;
-                }
-                if(cur != "") g_song.push_back(cur);
+                load_song(song.readString());
                 song.close();
             } else if(vec[0] == "wpm" && vec.size() >= 2) {
                 tts_set_wpm(vec[1].toInt());
@@ -183,33 +183,193 @@ void loop() {
         } else inp += c;
     }
 
-    if(!digitalRead(0)) i = 0;
+    if(!digitalRead(0) && !boot_pressed) {
+        if(menu_mode == 0) {
+            menu_mode = 1;
+            sel_option = 0;
+        } else menu_mode = 0;
+        boot_pressed = true;
+    } else if(digitalRead(0)) boot_pressed = false;
 
-    // Update state
-    input_upd();
-    uint64_t now = millis();
-    if(now - last_screen_upd > 100) {
-        String t = "";
-        for(int I = i % g_song.size(); I < i % g_song.size() + 7 && I < g_song.size(); I++)
-            t += g_song[I];
+    // Update state (STATE 0)
+    if(menu_mode == 0) {
+        input_upd();
+        uint64_t now = millis();
+        if(now - last_screen_upd > 100) {
+            gfx_start_render();
+            String t = "";
+            for(int I = i % g_song.size(); I < i % g_song.size() + 7 && I < g_song.size(); I++)
+                t += g_song[I];
+            gfx_set_jp(true);
 #ifdef CARDPUTER
-        M5Cardputer.Display.drawString(t + "                     ", 2, 2);
+            gfx_print(2, 2, t + "                     ");
 #else
-        display.clearDisplay();
-        u8g2_for_adafruit_gfx.setCursor(2, 32);
-        u8g2_for_adafruit_gfx.print(t + "                     ");
-        display.display();
+            gfx_print(2, 32, t + "                     ");
 #endif
-        last_screen_upd = now;
-    }
-    SynthKey k;
-    int j = 0;
-    if(pressed != KEY_NONE && !input_pressed(pressed)) {
-        tts_stop();
-        pressed = KEY_NONE;
-    }
-    if(pressed == KEY_NONE) while((k = all_keys[j++]) != KEY_NONE) if(input_pressed(k)) {
-        pressed = k;
-        next_syl(get_freq(k));
+            last_screen_upd = now;
+            gfx_end_render();
+        }
+        SynthKey k;
+        int j = 0;
+        if(pressed != KEY_NONE && !input_pressed(pressed)) {
+            tts_stop();
+            pressed = KEY_NONE;
+        }
+        if(pressed == KEY_NONE) while((k = all_keys[j++]) != KEY_NONE) if(input_pressed(k)) {
+            pressed = k;
+            next_syl(get_freq(k));
+        }
+    // Update state (STATE 1)
+    } else if(menu_mode == 1) {
+        input_upd();
+        uint64_t now = millis();
+        if(now - last_screen_upd > 100) {
+            gfx_start_render();
+            String opt = sel_option == 0
+                ? "restart song"
+                : sel_option == 1
+                ? "change song"
+                : sel_option == 2
+                ? "change voice"
+                : sel_option == 3
+                ? "change speed"
+                : sel_option == 4
+                ? "change stretch"
+                : "change volume";
+            gfx_set_jp(false);
+#ifdef CARDPUTER
+            // TODO
+#else
+            gfx_print(2, 16, opt);
+#endif
+            last_screen_upd = now;
+            gfx_end_render();
+        }
+        if(pressed != KEY_NONE && !input_pressed(pressed)) {
+            pressed = KEY_NONE;
+        } else if(pressed == KEY_NONE) {
+            if(input_pressed(KEY_C4)) {
+                pressed = KEY_C4;
+                if(sel_option == 0) sel_option = CFG_MAX;
+                else sel_option--;
+            } else if(input_pressed(KEY_D4)) {
+                pressed = KEY_D4;
+                if(sel_option == CFG_MAX) sel_option = 0;
+                else sel_option++;
+            } else if(input_pressed(KEY_B4)) {
+                pressed = KEY_B4;
+                menu_mode = 0;
+            } else if(input_pressed(KEY_C5)) {
+                pressed = KEY_C5;
+                if(sel_option == 0) {
+                    menu_mode = 0;
+                    i = 0;
+                } else {
+                    menu_mode = 2;
+                    config_option = sel_option;
+                    file_idx = 0;
+                    if(config_option == CFG_WPM) num_val = tts_get_wpm();
+                    else if(config_option == CFG_STRETCH) num_val = get_stretch();
+                    else if(config_option == CFG_VOLUME) num_val = tts_get_vol() * 100;
+                }
+            }
+        }
+    // Update state (STATE 2, FILE SELECT)
+    } else if(menu_mode == 2 && (config_option == CFG_SONG || config_option == CFG_VB)) {
+        input_upd();
+        uint64_t now = millis();
+        if(now - last_screen_upd > 100) {
+            gfx_start_render();
+            String p = config_option == CFG_SONG ? "/songs" : "/vbs";
+            File dir = LittleFS.open(p);
+            String f = dir.getNextFileName();
+            for(uint32_t i = 0; i < file_idx; i++) f = dir.getNextFileName();
+            if(f == "") {
+                file_idx = 0;
+                dir.close();
+                dir = LittleFS.open(p);
+                f = dir.getNextFileName();
+                if(f == "") {
+                    menu_mode = 0;
+                    dir.close();
+                    return;
+                }
+            }
+            gfx_set_jp(false);
+#ifdef CARDPUTER
+            // TODO
+#else
+            gfx_print(2, 16, f);
+#endif
+            gfx_end_render();
+            last_screen_upd = now;
+            dir.close();
+        }
+        if(pressed != KEY_NONE && !input_pressed(pressed)) {
+            pressed = KEY_NONE;
+        } else if(pressed == KEY_NONE) {
+            if(input_pressed(KEY_C4)) {
+                pressed = KEY_C4;
+                if(file_idx != 0) file_idx--;
+            } else if(input_pressed(KEY_D4)) {
+                pressed = KEY_D4;
+                file_idx++;
+            } else if(input_pressed(KEY_B4)) {
+                pressed = KEY_B4;
+                menu_mode = 1;
+            } else if(input_pressed(KEY_C5)) {
+                pressed = KEY_C5;
+                String dname = config_option == CFG_SONG ? "/songs" : "/vbs";
+                menu_mode = 0;
+                File dir = LittleFS.open(dname);
+                String f = dir.getNextFileName();
+                for(uint32_t i = 0; i < file_idx; i++) f = dir.getNextFileName();
+                dir.close();
+                File f2 = LittleFS.open(f);
+                if(config_option == CFG_SONG) load_song(f2.readString());
+                else tts_load_voice(f2.readString(), 440);
+                f2.close();
+                if(config_option == CFG_SONG) i = 0;
+            }
+        }
+    // Update state (STATE 2, NUMERIC SETTINGS)
+    } else if(menu_mode == 2 && (config_option == CFG_WPM || config_option == CFG_STRETCH || config_option == CFG_VOLUME)) {
+        input_upd();
+        uint64_t now = millis();
+        if(now - last_screen_upd > 100) {
+            gfx_start_render();
+            gfx_set_jp(false);
+#ifdef CARDPUTER
+            // TODO
+#else
+            gfx_print(2, 16, String(num_val));
+#endif
+            gfx_end_render();
+            last_screen_upd = now;
+        }
+        if(pressed != KEY_NONE && !input_pressed(pressed)) {
+            pressed = KEY_NONE;
+        } else if(pressed == KEY_NONE) {
+            if(input_pressed(KEY_C4)) {
+                pressed = KEY_C4;
+                if(config_option == CFG_STRETCH && num_val > 0) num_val -= 5;
+                else if(config_option == CFG_WPM && num_val > 10) num_val -= 10;
+                else if(config_option == CFG_VOLUME && num_val > 0) num_val -= 10;
+            } else if(input_pressed(KEY_D4)) {
+                pressed = KEY_D4;
+                if(config_option == CFG_STRETCH && num_val < 200) num_val += 5;
+                else if(config_option == CFG_WPM && num_val < 500) num_val += 10;
+                else if(config_option == CFG_VOLUME && num_val < 100) num_val += 10;
+            } else if(input_pressed(KEY_B4)) {
+                pressed = KEY_B4;
+                menu_mode = 1;
+            } else if(input_pressed(KEY_C5)) {
+                pressed = KEY_C5;
+                if(config_option == CFG_STRETCH) set_stretch(num_val);
+                else if(config_option == CFG_WPM && num_val < 500) tts_set_wpm(num_val);
+                else if(config_option == CFG_VOLUME && num_val < 100) tts_set_vol((float)num_val / 100);
+                menu_mode = 0;
+            }
+        }
     }
 }
