@@ -299,7 +299,7 @@ void loop() {
 #ifdef CARDPUTER
             // TODO
 #else
-            gfx_print(2, 16, f);
+            gfx_print(2, 16, config_option == CFG_SONG ? f.substring(7) : f.substring(5));
 #endif
             gfx_end_render();
             last_screen_upd = now;
