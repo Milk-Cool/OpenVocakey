@@ -2,14 +2,17 @@
 #include <BackgroundAudioSpeech.h>
 #include <ESP32I2SAudio.h>
 #include <libespeak-ng/voice/ja.h>
-#include <M5Cardputer.h>
 
 static ESP32I2SAudio* audio;
 static BackgroundAudioSpeech* BMP;
 static bool loaded = false;
 static unsigned char cvoice[1024];
 void tts_init() {
+#ifdef CARDPUTER
     audio = new ESP32I2SAudio(41, 43, 42);
+#else
+    audio = new ESP32I2SAudio(16, 17, 4);
+#endif
     BMP = new BackgroundAudioSpeech(*audio);
 }
 void tts_load_voice(String concat, int pitch) {

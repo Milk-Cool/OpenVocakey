@@ -1,5 +1,9 @@
 #include "input.h"
+#ifdef CARDPUTER
 #include <M5Cardputer.h>
+#else
+#include <Arduino.h>
+#endif
 
 SynthKey all_keys[] = {
     KEY_C4,
@@ -18,6 +22,24 @@ SynthKey all_keys[] = {
     KEY_NONE
 };
 
+void input_init() {
+#ifndef CARDPUTER
+    pinMode(15, INPUT_PULLUP);
+    pinMode(36, INPUT);
+    pinMode(39, INPUT);
+    pinMode(34, INPUT);
+    pinMode(35, INPUT);
+    pinMode(32, INPUT_PULLUP);
+    pinMode(33, INPUT_PULLUP);
+    pinMode(25, INPUT_PULLUP);
+    pinMode(26, INPUT_PULLUP);
+    pinMode(27, INPUT_PULLUP);
+    pinMode(14, INPUT_PULLUP);
+    pinMode(12, INPUT_PULLUP);
+    pinMode(13, INPUT_PULLUP);
+#endif
+}
+
 float get_freq(SynthKey key) {
     if(key == KEY_C4) return 261.63;
     if(key == KEY_CS4) return 277.18;
@@ -35,23 +57,58 @@ float get_freq(SynthKey key) {
     return 440;
 }
 void input_upd() {
+#ifdef CARDPUTER
     M5Cardputer.Keyboard.updateKeyList();
     M5Cardputer.Keyboard.updateKeysState();
+#endif
 }
-#define KEY(k, o) if(key == o) return M5Cardputer.Keyboard.isKeyPressed(k);
+#ifdef CARDPUTER
+#define KEY1(k, o) if(key == o) return M5Cardputer.Keyboard.isKeyPressed(k);
 bool input_pressed(SynthKey key) {
-    KEY('a', KEY_C4)
-    KEY('w', KEY_CS4)
-    KEY('s', KEY_D4)
-    KEY('e', KEY_DS4)
-    KEY('d', KEY_E4)
-    KEY('f', KEY_F4)
-    KEY('t', KEY_FS4)
-    KEY('g', KEY_G4)
-    KEY('y', KEY_GS4)
-    KEY('h', KEY_A4)
-    KEY('u', KEY_AS4)
-    KEY('j', KEY_B4)
-    KEY('k', KEY_C5)
+    KEY1('a', KEY_C4)
+    KEY1('w', KEY_CS4)
+    KEY1('s', KEY_D4)
+    KEY1('e', KEY_DS4)
+    KEY1('d', KEY_E4)
+    KEY1('f', KEY_F4)
+    KEY1('t', KEY_FS4)
+    KEY1('g', KEY_G4)
+    KEY1('y', KEY_GS4)
+    KEY1('h', KEY_A4)
+    KEY1('u', KEY_AS4)
+    KEY1('j', KEY_B4)
+    KEY1('k', KEY_C5)
     return false;
 }
+#else
+#define KEY2(p, o) if(key == o) return !digitalRead(p);
+bool input_pressed(SynthKey key) {
+    // Serial.printf("%d %hhu\n", 15, !digitalRead(15));
+    // Serial.printf("%d %hu\n", 36, analogRead(36));
+    // Serial.printf("%d %hu\n", 39, analogRead(39));
+    // Serial.printf("%d %hu\n", 34, analogRead(34));
+    // Serial.printf("%d %hu\n", 35, analogRead(35));
+    // Serial.printf("%d %hhu\n", 32, !digitalRead(32));
+    // Serial.printf("%d %hhu\n", 33, !digitalRead(33));
+    // Serial.printf("%d %hhu\n", 25, !digitalRead(25));
+    // Serial.printf("%d %hhu\n", 26, !digitalRead(26));
+    // Serial.printf("%d %hhu\n", 27, !digitalRead(27));
+    // Serial.printf("%d %hhu\n", 14, !digitalRead(14));
+    // Serial.printf("%d %hhu\n", 12, !digitalRead(12));
+    // Serial.printf("%d %hhu\n", 13, !digitalRead(13));
+    KEY2(15, KEY_C4)
+    KEY2(36, KEY_CS4)
+    KEY2(39, KEY_D4)
+    KEY2(34, KEY_DS4)
+    KEY2(35, KEY_E4)
+    KEY2(32, KEY_F4)
+    KEY2(33, KEY_FS4)
+    KEY2(25, KEY_G4)
+    KEY2(26, KEY_GS4)
+    KEY2(27, KEY_A4)
+    KEY2(14, KEY_AS4)
+    KEY2(12, KEY_B4)
+    KEY2(13, KEY_C5)
+    return false;
+}
+#endif

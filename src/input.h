@@ -17,6 +17,7 @@ typedef enum {
     KEY_NONE = 0xffffffff
 } SynthKey;
 
+void input_init();
 float get_freq(SynthKey key);
 void input_upd();
 bool input_pressed(SynthKey key);

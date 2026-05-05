@@ -1,5 +1,11 @@
 #include <Arduino.h>
+#ifdef CARDPUTER
 #include <M5Cardputer.h>
+#else
+#include <Adafruit_SSD1306.h>
+#include <U8g2_for_Adafruit_GFX.h>
+// #include "font.h"
+#endif
 #include "tts.h"
 #include "pitch.h"
 #include "cvt.h"
@@ -7,7 +13,9 @@
 #include <vector>
 #include "input.h"
 
+#ifdef CARDPUTER
 extern const uint8_t hiragana_vlw_start[] asm("_binary_data_hiragana_vlw_start");
+#endif
 
 static unsigned i = 0;
 static std::vector<String> g_song = {
@@ -19,13 +27,25 @@ static std::vector<String> g_song = {
     "お", "そ", "ら", "の", "ほ", "し", "よ",
 };
 
+#ifndef CARDPUTER
+Adafruit_SSD1306 display(128, 64);
+U8G2_FOR_ADAFRUIT_GFX u8g2_for_adafruit_gfx;
+#endif
+
 void setup() {
     Serial.begin(115200);
+#ifdef CARDPUTER
     auto cfg = M5.config();
     M5Cardputer.begin(cfg);
     M5Cardputer.Display.setTextSize(M5Cardputer.Display.height() / 60);
     M5Cardputer.Display.loadFont(hiragana_vlw_start);
     M5Cardputer.Speaker.begin();
+#else
+    display.begin(SSD1306_SWITCHCAPVCC, 0x3c);
+    u8g2_for_adafruit_gfx.begin(display);
+
+    u8g2_for_adafruit_gfx.setFont(u8g2_font_b16_t_japanese1);
+#endif
     // M5Cardputer.Display.println("ws");
     // M5Cardputer.Display.println(M5Cardputer.Speaker.config().pin_ws);
     // M5Cardputer.Display.println("data_out");
@@ -34,6 +54,7 @@ void setup() {
     // M5Cardputer.Display.println(M5Cardputer.Speaker.config().pin_bck);
     // M5Cardputer.Display.println("mck");
     // M5Cardputer.Display.println(M5Cardputer.Speaker.config().pin_mck);
+    input_init();
     tts_init();
     tts_load_voice("", 440);
     tts_set_wpm(200);
@@ -171,7 +192,14 @@ void loop() {
         String t = "";
         for(int I = i % g_song.size(); I < i % g_song.size() + 7 && I < g_song.size(); I++)
             t += g_song[I];
+#ifdef CARDPUTER
         M5Cardputer.Display.drawString(t + "                     ", 2, 2);
+#else
+        display.clearDisplay();
+        u8g2_for_adafruit_gfx.setCursor(2, 32);
+        u8g2_for_adafruit_gfx.print(t + "                     ");
+        display.display();
+#endif
         last_screen_upd = now;
     }
     SynthKey k;
