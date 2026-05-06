@@ -26,13 +26,14 @@ static uint8_t menu_mode = 0;
 static uint8_t sel_option = 0;
 static uint8_t config_option = 0;
 static uint32_t file_idx = 0;
-static uint32_t num_val = 0;
+static int32_t num_val = 0;
 #define CFG_SONG 1
 #define CFG_VB 2
 #define CFG_WPM 3
 #define CFG_STRETCH 4
 #define CFG_VOLUME 5
-#define CFG_MAX CFG_VOLUME
+#define CFG_TRANSPOSE 6
+#define CFG_MAX CFG_TRANSPOSE
 
 void setup() {
     Serial.begin(115200);
@@ -235,7 +236,9 @@ void loop() {
                 ? "change speed"
                 : sel_option == 4
                 ? "change stretch"
-                : "change volume";
+                : sel_option == 5
+                ? "change volume"
+                : "transpose";
             gfx_set_jp(false);
 #ifdef CARDPUTER
             gfx_print(2, 2, opt);
@@ -271,6 +274,7 @@ void loop() {
                     if(config_option == CFG_WPM) num_val = tts_get_wpm();
                     else if(config_option == CFG_STRETCH) num_val = get_stretch();
                     else if(config_option == CFG_VOLUME) num_val = tts_get_vol() * 100;
+                    else if(config_option == CFG_TRANSPOSE) num_val = get_transpose();
                 }
             }
         }
@@ -333,7 +337,7 @@ void loop() {
             }
         }
     // Update state (STATE 2, NUMERIC SETTINGS)
-    } else if(menu_mode == 2 && (config_option == CFG_WPM || config_option == CFG_STRETCH || config_option == CFG_VOLUME)) {
+    } else if(menu_mode == 2 && (config_option == CFG_WPM || config_option == CFG_STRETCH || config_option == CFG_VOLUME || config_option == CFG_TRANSPOSE)) {
         input_upd();
         uint64_t now = millis();
         if(now - last_screen_upd > 100) {
@@ -355,19 +359,22 @@ void loop() {
                 if(config_option == CFG_STRETCH && num_val > 0) num_val -= 5;
                 else if(config_option == CFG_WPM && num_val > 10) num_val -= 10;
                 else if(config_option == CFG_VOLUME && num_val > 0) num_val -= 10;
+                else if(config_option == CFG_TRANSPOSE && num_val > -3) num_val--;
             } else if(input_pressed(KEY_D4)) {
                 pressed = KEY_D4;
                 if(config_option == CFG_STRETCH && num_val < 200) num_val += 5;
                 else if(config_option == CFG_WPM && num_val < 500) num_val += 10;
                 else if(config_option == CFG_VOLUME && num_val < 100) num_val += 10;
+                else if(config_option == CFG_TRANSPOSE && num_val < 8) num_val++;
             } else if(input_pressed(KEY_B4)) {
                 pressed = KEY_B4;
                 menu_mode = 1;
             } else if(input_pressed(KEY_C5)) {
                 pressed = KEY_C5;
                 if(config_option == CFG_STRETCH) set_stretch(num_val);
-                else if(config_option == CFG_WPM && num_val < 500) tts_set_wpm(num_val);
-                else if(config_option == CFG_VOLUME && num_val < 100) tts_set_vol((float)num_val / 100);
+                else if(config_option == CFG_WPM) tts_set_wpm(num_val);
+                else if(config_option == CFG_VOLUME) tts_set_vol((float)num_val / 100);
+                else if(config_option == CFG_TRANSPOSE) set_transpose(num_val);
                 menu_mode = 0;
             }
         }

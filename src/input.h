@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 typedef enum {
     KEY_C4,
@@ -17,6 +18,8 @@ typedef enum {
     KEY_NONE = 0xffffffff
 } SynthKey;
 
+void set_transpose(int8_t l_transpose);
+int8_t get_transpose();
 void input_init();
 float get_freq(SynthKey key);
 void input_upd();

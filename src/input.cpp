@@ -64,21 +64,60 @@ void input_init() {
 #endif
 }
 
+static int8_t transpose = 0;
+void set_transpose(int8_t l_transpose) {
+    transpose = l_transpose;
+}
+int8_t get_transpose() {
+    return transpose;
+}
+
+float freqs[] = {
+    // -3
+    220.00,
+    233.08,
+    246.94,
+    //
+    261.63,
+    277.18,
+    293.67,
+    311.13,
+    329.63,
+    349.23,
+    369.99,
+    392.00,
+    415.30,
+    440.00,
+    466.16,
+    493.88,
+    523.25,
+    //
+    554.37,
+    587.33,
+    622.25,
+    698.46,
+    739.99,
+    783.99,
+    830.61,
+    880.00,
+    // +8
+};
+
 float get_freq(SynthKey key) {
-    if(key == KEY_C4) return 261.63;
-    if(key == KEY_CS4) return 277.18;
-    if(key == KEY_D4) return 293.67;
-    if(key == KEY_DS4) return 311.13;
-    if(key == KEY_E4) return 329.63;
-    if(key == KEY_F4) return 349.23;
-    if(key == KEY_FS4) return 369.99;
-    if(key == KEY_G4) return 392.00;
-    if(key == KEY_GS4) return 415.30;
-    if(key == KEY_A4) return 440.00;
-    if(key == KEY_AS4) return 466.16;
-    if(key == KEY_B4) return 493.88;
-    if(key == KEY_C5) return 523.25;
-    return 440;
+    if(key == KEY_C4) return freqs[3 + transpose];
+    if(key == KEY_CS4) return freqs[4 + transpose];
+    if(key == KEY_D4) return freqs[5 + transpose];
+    if(key == KEY_DS4) return freqs[6 + transpose];
+    if(key == KEY_E4) return freqs[7 + transpose];
+    if(key == KEY_F4) return freqs[8 + transpose];
+    if(key == KEY_FS4) return freqs[9 + transpose];
+    if(key == KEY_G4) return freqs[10 + transpose];
+    if(key == KEY_GS4) return freqs[11 + transpose];
+    if(key == KEY_A4) return freqs[12 + transpose];
+    if(key == KEY_AS4) return freqs[13 + transpose];
+    if(key == KEY_B4) return freqs[14 + transpose];
+    if(key == KEY_C5) return freqs[15 + transpose];
+    return freqs[12 + transpose];
 }
 void input_upd() {
 #ifdef CARDPUTER
