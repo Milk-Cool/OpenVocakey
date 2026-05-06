@@ -96,7 +96,7 @@ connect.addEventListener("click", async () => {
         document.querySelector("#songupload")?.addEventListener("click", async () => {
             const f = (document.querySelector("#songfile") as HTMLInputElement).files![0];
             const txt = await rfile(f);
-            await upload("v_set " + ((document.querySelector("#songname") as HTMLInputElement).value || "voice.txt") + "\n", txt);
+            await upload("s_set " + ((document.querySelector("#songname") as HTMLInputElement).value || "voice.txt") + "\n", txt);
             await updSongs();
             alert("success!");
         });
