@@ -1,0 +1,1 @@
+Not my footprint!! See https://github.com/KiCad/kicad-footprints/blob/master/Button_Switch_Keyboard.pretty/SW_Cherry_MX_1.00u_PCB.kicad_mod
