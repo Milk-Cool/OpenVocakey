@@ -1,0 +1,27 @@
+* {
+    font-family: sans-serif;
+}
+#voices, #songs {
+    position: fixed;
+    top: 0;
+    width: 50vw;
+    height: 100vh;
+    overflow-y: scroll;
+    background: #eee;
+}
+#voices {
+    left: 0;
+}
+#songs {
+    right: 0;
+}
+#connect {
+    position: fixed;
+    bottom: 1em;
+    right: 1em;
+}
+.listitem {
+    padding: 1em;
+    border-top: 2px solid gray;
+    cursor: pointer;
+}

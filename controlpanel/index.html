@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>OpenVocakey control panel</title>
+        <script src="script.ts" type="module" defer></script>
+        <link href="style.css" rel="stylesheet">
+    </head>
+    <body>
+        <div id="voices">
+            <h2>voices</h2>
+            <div id="voicelist"></div>
+            <input id="voicefile" type="file">
+            <input id="voicename" placeholder="file name">
+            <button id="voiceupload">upload</button>
+        </div>
+        <div id="songs">
+            <h2>songs</h2>
+            <div id="songlist"></div>
+            <input id="songfile" type="file">
+            <input id="songname" placeholder="file name">
+            <button id="songupload">upload</button>
+        </div>
+        <button id="connect">connect</button>
+    </body>
+</html>
