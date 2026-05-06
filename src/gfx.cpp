@@ -1,6 +1,12 @@
 #include "gfx.h"
+#ifndef CARDPUTER
 #include <Adafruit_SSD1306.h>
 #include <U8g2_for_Adafruit_GFX.h>
+#else
+#include <M5Cardputer.h>
+#endif
+
+bool last_jp = false;
 
 #ifdef CARDPUTER
 extern const uint8_t hiragana_vlw_start[] asm("_binary_data_hiragana_vlw_start");
@@ -20,9 +26,11 @@ void gfx_init() {
 #endif
 }
 void gfx_set_jp(bool jp) {
+    if(jp == last_jp) return;
+    last_jp = jp;
 #ifdef CARDPUTER
     if(jp) M5Cardputer.Display.loadFont(hiragana_vlw_start);
-    else M5Cardputer.Display. // TODO
+    else M5Cardputer.Display.setFont(&fonts::AsciiFont8x16);
 #else
     if(jp) u8g2_for_adafruit_gfx.setFont(u8g2_font_b16_t_japanese1);
     else u8g2_for_adafruit_gfx.setFont(u8g2_font_9x15_tf);
@@ -30,7 +38,11 @@ void gfx_set_jp(bool jp) {
 }
 void gfx_set_inv(bool inv) {
 #ifdef CARDPUTER
-    // TODO
+    if(inv) {
+        M5Cardputer.Display.setTextColor(M5Cardputer.Display.color888(0x00, 0x00, 0x00), M5Cardputer.Display.color888(0xff, 0xff, 0xff));
+    } else {
+        M5Cardputer.Display.setTextColor(M5Cardputer.Display.color888(0xff, 0xff, 0xff), M5Cardputer.Display.color888(0x00, 0x00, 0x00));
+    }
 #else
     if(inv) {
         u8g2_for_adafruit_gfx.setBackgroundColor(0xffff);
@@ -43,7 +55,7 @@ void gfx_set_inv(bool inv) {
 }
 void gfx_print(int x, int y, String text) {
 #ifdef CARDPUTER
-    M5Cardputer.Display.drawString(t + "                     ", x, y);
+    M5Cardputer.Display.drawString(text + "                     ", x, y);
 #else
     u8g2_for_adafruit_gfx.setCursor(x, y);
     u8g2_for_adafruit_gfx.print(text + "                     ");

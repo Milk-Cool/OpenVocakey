@@ -238,7 +238,7 @@ void loop() {
                 : "change volume";
             gfx_set_jp(false);
 #ifdef CARDPUTER
-            // TODO
+            gfx_print(2, 2, opt);
 #else
             gfx_print(2, 16, opt);
 #endif
@@ -297,7 +297,7 @@ void loop() {
             }
             gfx_set_jp(false);
 #ifdef CARDPUTER
-            // TODO
+            gfx_print(2, 2, config_option == CFG_SONG ? f.substring(7) : f.substring(5));
 #else
             gfx_print(2, 16, config_option == CFG_SONG ? f.substring(7) : f.substring(5));
 #endif
@@ -340,7 +340,7 @@ void loop() {
             gfx_start_render();
             gfx_set_jp(false);
 #ifdef CARDPUTER
-            // TODO
+            gfx_print(2, 2, String(num_val));
 #else
             gfx_print(2, 16, String(num_val));
 #endif
