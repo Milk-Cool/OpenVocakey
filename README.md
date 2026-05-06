@@ -32,6 +32,8 @@ This is just an espeak-ng voice, but without the `pitch` and `language` fields (
 ### Assembling the board
 If you decidedto make your own keyboard, first of all, you'd have to order a two-layer PCB. This is because one of the traces (yes, just one!) is on the other side of the PCB. Then, once it arrives, you have to solder MX-Cherry style keyboard switches into the holes on the bottom of the board (and add keycaps to your liking) and solder on female 2.54mm headers everywhere else. Then, you can insert a 30-pin ESP32 board into the double headers (with the USB port facing outwards), an i2c SSD1306 display into the middle headers (facing inwards) and a MAX98357a i2s audio amplifier into the remaining headers (facing outwards; don't forget to connect a speaker!!). Also don't forget to solder on the 10K resistors for pull-up below the ESP32. Then you'd have to upload the firmware to the ESP32 and you're done!!
 
+> Note: see `bom.csv` for the Bill of Materials.
+
 ### Navigating the menus
 You can press BOOT/G0 on your board to enter the menu. From there, you can press the two leftmost white buttons to move left or right, and the rightmost two white buttons for cancelling and confirming your actions (e. g. entering a submenu and then confirming the volume change using the rightmost button). You can also press G0 again to leave the menu.
 
