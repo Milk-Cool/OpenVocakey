@@ -34,6 +34,8 @@ If you decidedto make your own keyboard, first of all, you'd have to order a two
 
 ![PCB](pics/pcb.png)
 
+![Schematic](pics/schematic.png)
+
 > Note: see `bom.csv` for the Bill of Materials.
 
 ### Navigating the menus
