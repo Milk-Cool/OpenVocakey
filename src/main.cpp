@@ -9,17 +9,18 @@
 #include "cvt.h"
 #include <LittleFS.h>
 #include <vector>
+#include <utility>
 #include "input.h"
 #include "gfx.h"
 
 static unsigned i = 0;
-static std::vector<String> g_song = {
-    "き", "ら", "き", "ら", "ひ", "か", "る",
-    "お", "そ", "ら", "の", "ほ", "し", "よ",
-    "ま", "ば", "た", "き", "し", "て", "は",
-    "み", "ん", "な", "を", "み", "て", "る",
-    "き", "ら", "き", "ら", "ひ", "か", "る",
-    "お", "そ", "ら", "の", "ほ", "し", "よ",
+static std::vector<std::pair<String, String>> g_song = {
+    { "き", "" }, { "ら", "" }, { "き", "" }, { "ら", "" }, { "ひ", "" }, { "か", "" }, { "る", "" },
+    { "お", "" }, { "そ", "" }, { "ら", "" }, { "の", "" }, { "ほ", "" }, { "し", "" }, { "よ", "" },
+    { "ま", "" }, { "ば", "" }, { "た", "" }, { "き", "" }, { "し", "" }, { "て", "" }, { "は", "" },
+    { "み", "" }, { "ん", "" }, { "な", "" }, { "を", "" }, { "み", "" }, { "て", "" }, { "る", "" },
+    { "き", "" }, { "ら", "" }, { "き", "" }, { "ら", "" }, { "ひ", "" }, { "か", "" }, { "る", "" },
+    { "お", "" }, { "そ", "" }, { "ら", "" }, { "の", "" }, { "ほ", "" }, { "し", "" }, { "よ", "" },
 };
 
 static uint8_t menu_mode = 0;
@@ -67,7 +68,7 @@ void setup() {
 static SynthKey pressed = KEY_NONE;
 static void next_syl(float pitch) {
     tts_set_pitch(pitch_calc(440, pitch));
-    String cvtd = cvt_syl(g_song[i++ % g_song.size()]);
+    String cvtd = cvt_syl(g_song[i++ % g_song.size()].first);
     tts_play(cvtd.c_str());
 }
 uint64_t last_screen_upd = 0;
@@ -114,11 +115,19 @@ static void load_song(String str) {
     for(char c : str) {
         if(c == '\r') continue;
         if(c == '\n') {
-            if(cur != "") g_song.push_back(cur);
+            if(cur != "") {
+                int idx = cur.indexOf(',');
+                if(idx == -1) g_song.push_back(std::pair<String, String>(cur, ""));
+                else g_song.push_back(std::pair<String, String>(cur.substring(0, idx), cur.substring(idx + 1)));
+            }
             cur = "";
         } else cur += c;
     }
-    if(cur != "") g_song.push_back(cur);
+    if(cur != "") {
+        int idx = cur.indexOf(',');
+        if(idx == -1) g_song.push_back(std::pair<String, String>(cur, ""));
+        else g_song.push_back(std::pair<String, String>(cur.substring(0, idx), cur.substring(idx + 1)));
+    }
 }
 static bool boot_pressed = false;
 void loop() {
@@ -200,7 +209,7 @@ void loop() {
             gfx_start_render();
             String t = "";
             for(int I = i % g_song.size(); I < i % g_song.size() + 7 && I < g_song.size(); I++)
-                t += g_song[I];
+                t += g_song[I].first + g_song[I].second;
             gfx_set_jp(true);
 #ifdef CARDPUTER
             gfx_print(2, 2, t + "                     ");
@@ -214,6 +223,7 @@ void loop() {
         int j = 0;
         if(pressed != KEY_NONE && !input_pressed(pressed)) {
             tts_stop();
+            if(g_song[(i - 1) % g_song.size()].second.length() > 0) tts_play(g_song[(i - 1) % g_song.size()].second.c_str());
             pressed = KEY_NONE;
         }
         if(pressed == KEY_NONE) while((k = all_keys[j++]) != KEY_NONE) if(input_pressed(k)) {

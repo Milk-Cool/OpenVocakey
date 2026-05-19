@@ -24,6 +24,11 @@ A song is just a text file containing Japanese characters (hiragana or katakana 
 る
 ```
 
+You can also add ending syllables after a base syllable, separated by a comma (will not be stretched):
+```
+こ,い
+```
+
 > Note: you can input more than one syllable on one line, but then the vowel stretch won't work properly.
 
 ### Voice format
